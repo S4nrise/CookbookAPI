@@ -18,7 +18,7 @@ namespace CookbookAPI.Controllers
             return Ok();
         }
 
-        [HttpDelete("/DeleteIngredient")]
+        [HttpDelete("/DeleteIngredient/{id}")]
         public IActionResult DeleteIngredient(int id)
         {
             ingredientsRepository.DeleteIngredient(id);
@@ -27,5 +27,8 @@ namespace CookbookAPI.Controllers
 
         [HttpGet("/AllIngredients")]
         public IActionResult GettAllIngredients() => Ok(ingredientsRepository.GetAllIngredients());
+
+        [HttpGet("/GetIngredient/{id}")]
+        public IActionResult GetIngredientById(int id) => Ok(ingredientsRepository.GetIngredientById(id));
     }
 }

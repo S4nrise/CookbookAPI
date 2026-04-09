@@ -14,7 +14,8 @@ namespace CookbookAPI.Repository
                 Id = _recipes.Count,
                 Name = name.Trim(),
                 Description = description?.Trim(),
-                Ingredients = new List<IngredientInRecipe>()
+                Ingredients = new List<IngredientInRecipe>(),
+                Rating = new List<int>()
             };
 
             _recipes.Add(recipe);

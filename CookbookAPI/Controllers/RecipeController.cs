@@ -15,7 +15,7 @@ namespace CookbookAPI.Controllers
             return Ok(recipesRepository.GetRecipes());
         }
 
-        [HttpGet("/GetRecipeById")]
+        [HttpGet("/GetRecipeById/{id}")]
         public IActionResult GetRecipeById(int id)
         {
             var recipe = recipesRepository.GetRecipeById(id);
@@ -29,24 +29,24 @@ namespace CookbookAPI.Controllers
             return Ok();
         }
 
-        [HttpPut("/UpdateRecipe")]
-        public IActionResult UpdateRecipe(int recipeId,string? name, string? description, List<IngredientRequirement>? ingredientRequirements)
+        [HttpPut("/UpdateRecipe/{id}")]
+        public IActionResult UpdateRecipe(int id,string? name, string? description, List<IngredientRequirement>? ingredientRequirements)
         {
-            recipesRepository.UpdateRecipe(recipeId, name, description, ingredientRequirements);
+            recipesRepository.UpdateRecipe(id, name, description, ingredientRequirements);
             return Ok();
         }
 
-        [HttpDelete("/DeleteRecipe")]
-        public IActionResult DeleteRecipe(int recipeId)
+        [HttpDelete("/DeleteRecipe/{id}")]
+        public IActionResult DeleteRecipe(int id)
         {
-            recipesRepository.DeleteRecipe(recipeId);
+            recipesRepository.DeleteRecipe(id);
             return Ok();
         }
 
-        [HttpPost("/RateRecipe")]
-        public IActionResult RateRecipeById(int recipeId, int rateNumber)
+        [HttpPost("/RateRecipe/{id}")]
+        public IActionResult RateRecipeById(int id, int rateNumber)
         {
-            recipesRepository.RateRecipeById(recipeId, rateNumber);
+            recipesRepository.RateRecipeById(id, rateNumber);
             return Ok();
         }
     }
