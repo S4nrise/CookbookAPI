@@ -1,4 +1,5 @@
 ﻿using CookbookAPI.Abstractions;
+using CookbookAPI.Exceptions;
 using CookbookAPI.Models;
 
 namespace CookbookAPI.Repository
@@ -6,26 +7,27 @@ namespace CookbookAPI.Repository
     public class IngredientsRepository : IIngredientsRepository
     {
         private List<Ingredient> _ingredients = new();
-        public void AddIngredient(string name)
+        public int AddIngredient(string name)
         {
-            var ingredient = new Ingredient() { Id = GetMaxIngredientId() + 1, Name = name }; //как лучше избавится от +1?
+            var ingredient = new Ingredient() { Id = GetNextIngredientId(), Name = name };
             _ingredients.Add(ingredient);
+
+            return ingredient.Id;
         }
 
         public void DeleteIngredient(int id)
         {
-            _ingredients.Remove(_ingredients.First(x => x.Id == id));
+            var ingredient = GetIngredientById(id);
+            _ingredients.Remove(ingredient);
         }
 
         public IReadOnlyList<Ingredient> GetAllIngredients() => _ingredients;
 
-        public Ingredient GetIngredientById(int id) => _ingredients.First(x => x.Id == id) ?? throw new KeyNotFoundException($"Ingredient id - {id}, not found"); 
+        public Ingredient GetIngredientById(int id) => _ingredients.First(x => x.Id == id) ?? throw new IngredientNotFoundException(id); 
 
-        private int GetMaxIngredientId()
+        private int GetNextIngredientId()
         {
             return _ingredients.Count == 0 ? 0 : _ingredients.Max(x=>x.Id); 
         }  
-
-        
     }
 }

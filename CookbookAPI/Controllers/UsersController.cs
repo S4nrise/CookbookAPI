@@ -5,7 +5,7 @@ namespace CookbookAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         public readonly List<User> Users = new List<User>
         {

@@ -1,13 +1,14 @@
 ﻿using CookbookAPI.Abstractions;
+using CookbookAPI.Dto;
+using CookbookAPI.Exceptions;
 using CookbookAPI.Models;
-using CookbookAPI.Models.Dto;
 
 namespace CookbookAPI.Repository
 {
     public class RecipesRepository(IIngredientsRepository ingredientsRepository) : IRecipesRepository
     {
         private List<Recipe> _recipes = new List<Recipe>();
-        public void AddRecipe(string name, string? description, List<IngredientRequirement> ingredientRequirements)
+        public int AddRecipe(string name, string? description, List<IngredientInRecipeDto> ingredientRequirements)
         {
             var recipe = new Recipe()
             {
@@ -20,7 +21,7 @@ namespace CookbookAPI.Repository
 
             _recipes.Add(recipe);
 
-            if (ingredientRequirements == null) return;
+            if (ingredientRequirements == null) return recipe.Id;
 
             foreach (var req in ingredientRequirements)
             {
@@ -31,11 +32,13 @@ namespace CookbookAPI.Repository
                     recipe.Ingredients.Add(new IngredientInRecipe
                     {
                         IngredientId = foundIngredient.Id,
-                        Ingredient = foundIngredient,
+                        //Ingredient = foundIngredient,
                         Amount = req.Amount
                     });
                 }
             }
+
+            return recipe.Id;
         }
 
         public void DeleteRecipe(int id)
@@ -45,7 +48,7 @@ namespace CookbookAPI.Repository
 
         public Recipe GetRecipeById(int id)
         {
-            return _recipes.FirstOrDefault(x => x.Id == id) ?? throw new KeyNotFoundException($"recipe id - {id}, not found");//Сделать кастомные исключения
+            return _recipes.FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
         }
 
         public IReadOnlyList<Recipe> GetRecipes()
@@ -53,13 +56,13 @@ namespace CookbookAPI.Repository
             return _recipes;
         }
 
-        public void RateRecipeById(int recipeId, int rateNumber)
+        public void RateRecipeById(int id, int rate)
         {
-            var recipe = GetRecipeById(recipeId);
-            recipe.Rating.Add(rateNumber);
+            var recipe = GetRecipeById(id);
+            recipe.Rating.Add(rate);
         }
 
-        public void UpdateRecipe(int recipeId, string? name, string? description, List<IngredientRequirement>? ingredientRequirements)
+        public void UpdateRecipe(int recipeId, string? name, string? description, List<IngredientInRecipeDto>? ingredientRequirements)
         {
             var recipe = GetRecipeById(recipeId);
 
@@ -87,7 +90,7 @@ namespace CookbookAPI.Repository
                         recipe.Ingredients.Add(new IngredientInRecipe
                         {
                             IngredientId = foundIngredient.Id,
-                            Ingredient = foundIngredient,
+                            //Ingredient = foundIngredient,
                             Amount = req.Amount
                         });
                     }

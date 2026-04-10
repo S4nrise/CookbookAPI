@@ -1,20 +1,20 @@
-﻿using CookbookAPI.Models;
-using CookbookAPI.Models.Dto;
+﻿using CookbookAPI.Dto;
+using CookbookAPI.Models;
 
 namespace CookbookAPI.Abstractions
 {
     public interface IRecipesRepository
     {
-        public void AddRecipe(string name, string? description, List<IngredientRequirement> ingredientRequirements);
+        public int AddRecipe(string name, string? description, List<IngredientInRecipeDto> ingredientRequirements);
 
         public void DeleteRecipe(int id);
 
-        public void UpdateRecipe(int recipeId, string? name, string? description, List<IngredientRequirement>? ingredientRequirements);
+        public void UpdateRecipe(int recipeId, string? name, string? description, List<IngredientInRecipeDto>? ingredientRequirements);
 
         public Recipe GetRecipeById(int id);
 
         public IReadOnlyList<Recipe> GetRecipes();
 
-        public void RateRecipeById(int recipeId, int rateNumber);
+        public void RateRecipeById(int id, int rate);
     }
 }

@@ -1,6 +1,4 @@
 ﻿using CookbookAPI.Abstractions;
-using CookbookAPI.Models;
-using CookbookAPI.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CookbookAPI.Controllers
@@ -14,15 +12,15 @@ namespace CookbookAPI.Controllers
         [HttpPost("/AddIngredient")]
         public IActionResult AddIngredient(string name)
         {
-            ingredientsRepository.AddIngredient(name.Trim());
-            return Ok();
+            var ingredientId = ingredientsRepository.AddIngredient(name.Trim());
+            return CreatedAtAction("GetIngredientById", new {id= ingredientId }, ingredientId);
         }
 
         [HttpDelete("/DeleteIngredient/{id}")]
         public IActionResult DeleteIngredient(int id)
         {
             ingredientsRepository.DeleteIngredient(id);
-            return Ok();
+            return NoContent();
         }
 
         [HttpGet("/AllIngredients")]

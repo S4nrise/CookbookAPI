@@ -1,13 +1,13 @@
 ﻿using CookbookAPI.Abstractions;
+using CookbookAPI.Dto;
 using CookbookAPI.Models;
-using CookbookAPI.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CookbookAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class RecipeController(IRecipesRepository recipesRepository) : ControllerBase
+    public class RecipesController(IRecipesRepository recipesRepository) : ControllerBase
     {
         [HttpGet("/Recipes")]
         public IActionResult GetRecipes()
@@ -19,35 +19,35 @@ namespace CookbookAPI.Controllers
         public IActionResult GetRecipeById(int id)
         {
             var recipe = recipesRepository.GetRecipeById(id);
-            return Ok(recipe);
+            return recipe == null ? NotFound() : Ok(recipe);
         }
 
         [HttpPost("/AddRecipe")]
-        public IActionResult AddRecipe(string name, string? description, List<IngredientRequirement>? ingredientRequirements )
+        public IActionResult AddRecipe(string name, string? description, List<IngredientInRecipeDto>? ingredientRequirements )
         {
-            recipesRepository.AddRecipe(name, description, ingredientRequirements);
-            return Ok();
+            var recipeId = recipesRepository.AddRecipe(name, description, ingredientRequirements);
+            return CreatedAtAction("GetRecipeById", new { id = recipeId }, recipeId);
         }
 
         [HttpPut("/UpdateRecipe/{id}")]
-        public IActionResult UpdateRecipe(int id,string? name, string? description, List<IngredientRequirement>? ingredientRequirements)
+        public IActionResult UpdateRecipe(int id,string? name, string? description, List<IngredientInRecipeDto>? ingredientRequirements)
         {
             recipesRepository.UpdateRecipe(id, name, description, ingredientRequirements);
-            return Ok();
+            return NoContent();
         }
 
         [HttpDelete("/DeleteRecipe/{id}")]
         public IActionResult DeleteRecipe(int id)
         {
             recipesRepository.DeleteRecipe(id);
-            return Ok();
+            return NoContent();
         }
 
         [HttpPost("/RateRecipe/{id}")]
-        public IActionResult RateRecipeById(int id, int rateNumber)
+        public IActionResult RateRecipeById(int id, int rate)
         {
-            recipesRepository.RateRecipeById(id, rateNumber);
-            return Ok();
+            recipesRepository.RateRecipeById(id, rate);
+            return NoContent();//Подумать, мб что-то стоит возвращать. 
         }
     }
 }
