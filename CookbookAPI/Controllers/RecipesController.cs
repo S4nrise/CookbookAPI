@@ -18,8 +18,7 @@ namespace CookbookAPI.Controllers
         [HttpGet("/GetRecipeById/{id}")]
         public IActionResult GetRecipeById(int id)
         {
-            var recipe = recipesRepository.GetRecipeById(id);
-            return recipe == null ? NotFound() : Ok(recipe);
+            return Ok(recipesRepository.GetRecipeById(id));
         }
 
         [HttpPost("/AddRecipe")]

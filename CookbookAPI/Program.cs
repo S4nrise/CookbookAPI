@@ -1,4 +1,5 @@
 using CookbookAPI.Abstractions;
+using CookbookAPI.Extensions;
 using CookbookAPI.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseCustomExceptionHandler();
 
 app.MapControllers();
 
