@@ -12,7 +12,7 @@ namespace CookbookAPI.Repository
         {
             var recipe = new Recipe()
             {
-                Id = _recipes.Count,
+                Id = GetNextRecipetId(),
                 Name = name.Trim(),
                 Description = description?.Trim(),
                 Ingredients = new List<IngredientInRecipe>(),
@@ -96,6 +96,10 @@ namespace CookbookAPI.Repository
                     }
                 }
             }
+        }
+        private int GetNextRecipetId()
+        {
+            return _recipes.Count == 0 ? 0 : _recipes.Max(x => x.Id) + 1;
         }
     }
 }

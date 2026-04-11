@@ -2,10 +2,10 @@
 {
     public class RecipeNotFoundException : Exception
     {
-        public int Value { get; }
+        public int Id { get; }
         public RecipeNotFoundException(int recipeId) : base($"Recipe id - {recipeId}, not found.")
         {
-            Value = recipeId;
+            Id = recipeId;
         }
     }
 }
