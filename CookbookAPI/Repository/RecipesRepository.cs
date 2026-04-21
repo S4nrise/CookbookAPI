@@ -1,39 +1,44 @@
-﻿using CookbookAPI.Abstractions;
-using CookbookAPI.Dto;
+﻿using AutoMapper;
+using CookbookAPI.Abstractions;
+using CookbookAPI.Contracts;
 using CookbookAPI.Exceptions;
 using CookbookAPI.Models;
 
 namespace CookbookAPI.Repository
 {
-    public class RecipesRepository(IIngredientsRepository ingredientsRepository) : IRecipesRepository
+    public class RecipesRepository(IIngredientsRepository ingredientsRepository, IMapper mapper) : IRecipesRepository
     {
         private List<Recipe> _recipes = new List<Recipe>();
-        public int AddRecipe(string name, string? description, List<IngredientInRecipeDto> ingredientRequirements)
+        public int AddRecipe(CreateRecipeDto createRecipeDto)
         {
-            var recipe = new Recipe()
-            {
-                Id = GetNextRecipetId(),
-                Name = name.Trim(),
-                Description = description?.Trim(),
-                Ingredients = new List<IngredientInRecipe>(),
-                Rating = new List<int>()
-            };
+            //var recipe = new Recipe()
+            //{
+            //    Id = GetNextRecipetId(),
+            //    Name = createRecipeDto.Name.Trim(),
+            //    Description = createRecipeDto.Description.Trim(),
+            //    Ingredients = new List<IngredientInRecipe>(),
+            //    Rating = new List<int>()
+            //};
+
+            var recipe = mapper.Map<Recipe>(createRecipeDto);
+            recipe.Id = GetNextRecipetId();
 
             _recipes.Add(recipe);
 
-            if (ingredientRequirements == null) return recipe.Id;
+            if (createRecipeDto.IngredientsInRecipeDto == null) return recipe.Id;
 
-            foreach (var req in ingredientRequirements)
+            foreach (var req in createRecipeDto.IngredientsInRecipeDto)
             {
                 var foundIngredient = ingredientsRepository.GetIngredientById(req.IngredientId);
 
                 if (foundIngredient != null)
                 {
-                    recipe.Ingredients.Add(new IngredientInRecipe
+                    recipe.Ingredients!.Add(new IngredientInRecipe
                     {
                         IngredientId = foundIngredient.Id,
                         //Ingredient = foundIngredient,
-                        Amount = req.Amount
+                        Amount = req.Amount,
+                        Units = req.Units,
                     });
                 }
             }
@@ -46,14 +51,18 @@ namespace CookbookAPI.Repository
             _recipes.Remove(GetRecipeById(id));
         }
 
-        public Recipe GetRecipeById(int id)
+        public RecipeVm GetRecipeVmById(int id)
+        {
+            return mapper.Map<RecipeVm>(GetRecipeById(id));
+        }
+        private Recipe GetRecipeById(int id)
         {
             return _recipes.FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
         }
 
-        public IReadOnlyList<Recipe> GetRecipes()
+        public IReadOnlyList<RecipeVm> GetRecipes()
         {
-            return _recipes;
+            return mapper.Map<IReadOnlyList<RecipeVm>>(_recipes);
         }
 
         public void RateRecipeById(int id, int rate)
@@ -61,25 +70,26 @@ namespace CookbookAPI.Repository
             var recipe = GetRecipeById(id);
             recipe.Rating.Add(rate);
         }
-
-        public void UpdateRecipe(int recipeId, string? name, string? description, List<IngredientInRecipeDto>? ingredientRequirements)
+        
+        public void UpdateRecipe(UpdateRecipeDto updateRecipeDto)
         {
-            var recipe = GetRecipeById(recipeId);
+            var recipe = GetRecipeById(updateRecipeDto.Id);
 
-            recipe.Name = name?.Trim() ?? recipe.Name;
-            recipe.Description = description?.Trim() ?? recipe.Description;
+            recipe.Name = updateRecipeDto.Name?.Trim() ?? recipe.Name;
+            recipe.Description = updateRecipeDto.Description?.Trim() ?? recipe.Description;
 
-            if (ingredientRequirements == null) return;
+            if (updateRecipeDto.IngredientsInRecipeDto == null) return;
 
-            var incomingIngredientId = ingredientRequirements.Select(x => x.IngredientId).ToList();
+            var incomingIngredientId = updateRecipeDto.IngredientsInRecipeDto.Select(x => x.IngredientId).ToList();
             recipe.Ingredients.RemoveAll(x => !incomingIngredientId.Contains(x.IngredientId));
 
-            foreach (var req in ingredientRequirements)
+            foreach (var req in updateRecipeDto.IngredientsInRecipeDto)
             {
                 var existing = recipe.Ingredients.FirstOrDefault(x => x.IngredientId == req.IngredientId);
                 if (existing.Amount != null)
                 {
                     existing.Amount = req.Amount;
+                    existing.Units = req.Units;
                 }
                 else
                 {
@@ -91,7 +101,8 @@ namespace CookbookAPI.Repository
                         {
                             IngredientId = foundIngredient.Id,
                             //Ingredient = foundIngredient,
-                            Amount = req.Amount
+                            Amount = req.Amount,
+                            Units = req.Units,
                         });
                     }
                 }

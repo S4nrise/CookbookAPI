@@ -1,4 +1,5 @@
 using CookbookAPI.Abstractions;
+using CookbookAPI.Configuration.Mapping;
 using CookbookAPI.Extensions;
 using CookbookAPI.Repository;
 
@@ -13,6 +14,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IIngredientsRepository, IngredientsRepository>();
 builder.Services.AddSingleton<IRecipesRepository, RecipesRepository>();
+
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 

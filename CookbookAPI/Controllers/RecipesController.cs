@@ -1,13 +1,12 @@
 ﻿using CookbookAPI.Abstractions;
-using CookbookAPI.Dto;
-using CookbookAPI.Models;
+using CookbookAPI.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CookbookAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class RecipesController(IRecipesRepository recipesRepository) : ControllerBase
+    public class RecipesController(IRecipesRepository recipesRepository, IIngredientsRepository ingredientsRepository) : ControllerBase
     {
         [HttpGet("/Recipes")]
         public IActionResult GetRecipes()
@@ -18,20 +17,20 @@ namespace CookbookAPI.Controllers
         [HttpGet("/GetRecipeById/{id}")]
         public IActionResult GetRecipeById(int id)
         {
-            return Ok(recipesRepository.GetRecipeById(id));
+            return Ok(recipesRepository.GetRecipeVmById(id));
         }
 
         [HttpPost("/AddRecipe")]
-        public IActionResult AddRecipe(string name, string? description, List<IngredientInRecipeDto>? ingredientRequirements )
+        public IActionResult AddRecipe(CreateRecipeDto createRecipeDto)
         {
-            var recipeId = recipesRepository.AddRecipe(name, description, ingredientRequirements);
+            var recipeId = recipesRepository.AddRecipe(createRecipeDto);
             return CreatedAtAction("GetRecipeById", new { id = recipeId }, recipeId);
         }
 
         [HttpPut("/UpdateRecipe/{id}")]
-        public IActionResult UpdateRecipe(int id,string? name, string? description, List<IngredientInRecipeDto>? ingredientRequirements)
+        public IActionResult UpdateRecipe(UpdateRecipeDto updateRecipeDto)
         {
-            recipesRepository.UpdateRecipe(id, name, description, ingredientRequirements);
+            recipesRepository.UpdateRecipe(updateRecipeDto);
             return NoContent();
         }
 
