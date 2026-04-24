@@ -5,15 +5,15 @@ namespace CookbookAPI.Abstractions
 {
     public interface IRecipesRepository
     {
-        public int AddRecipe(CreateRecipeDto createRecipeDto);
+        public int AddRecipe(Recipe recipe);
 
         public void DeleteRecipe(int id);
 
-        public void UpdateRecipe(UpdateRecipeDto updateRecipeDto);
+        public void UpdateRecipe(int id, Recipe recipe);
 
-        public RecipeVm GetRecipeVmById(int id);
+        public Recipe GetRecipeById(int id);
 
-        public IReadOnlyList<RecipeVm> GetRecipes();
+        public IReadOnlyList<Recipe> GetRecipes();
 
         public void RateRecipeById(int id, int rate);
     }

@@ -2,7 +2,7 @@
 using CookbookAPI.Exceptions;
 using CookbookAPI.Models;
 
-namespace CookbookAPI.Repository
+namespace CookbookAPI.Services
 {
     public class IngredientsRepository : IIngredientsRepository
     {

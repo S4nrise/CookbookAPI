@@ -17,11 +17,11 @@ namespace CookbookAPI.Middleware
             {
                 await _next(context);
             }
-            catch (RecipeNotFoundException ex)
+            catch (RecipeNotFoundException)
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
             }
-            catch (IngredientNotFoundException ex)
+            catch (IngredientNotFoundException)
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
             }
