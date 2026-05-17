@@ -1,4 +1,4 @@
-﻿namespace CookbookAPI.Enums
+﻿namespace CookbookAPI.Models.Enums
 {
     public enum Units
     {

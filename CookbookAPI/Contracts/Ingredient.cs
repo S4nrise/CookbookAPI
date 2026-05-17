@@ -1,4 +1,4 @@
-﻿using CookbookAPI.Enums;
+﻿using CookbookAPI.Models.Enums;
 
 namespace CookbookAPI.Contracts
 {

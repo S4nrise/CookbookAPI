@@ -44,19 +44,16 @@ namespace CookbookAPI.Migrations
                     b.Property<int>("IngredientId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("RercpeId")
+                    b.Property<int>("RecipeId")
                         .HasColumnType("integer");
 
                     b.Property<double>("Amount")
                         .HasColumnType("double precision");
 
-                    b.Property<int?>("RecipeId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("Units")
                         .HasColumnType("integer");
 
-                    b.HasKey("IngredientId", "RercpeId");
+                    b.HasKey("IngredientId", "RecipeId");
 
                     b.HasIndex("RecipeId");
 
@@ -89,9 +86,26 @@ namespace CookbookAPI.Migrations
 
             modelBuilder.Entity("CookbookAPI.Models.IngredientInRecipe", b =>
                 {
-                    b.HasOne("CookbookAPI.Models.Recipe", null)
+                    b.HasOne("CookbookAPI.Models.Ingredient", "Ingredient")
+                        .WithMany("Recipes")
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CookbookAPI.Models.Recipe", "Recipe")
                         .WithMany("Ingredients")
-                        .HasForeignKey("RecipeId");
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ingredient");
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("CookbookAPI.Models.Ingredient", b =>
+                {
+                    b.Navigation("Recipes");
                 });
 
             modelBuilder.Entity("CookbookAPI.Models.Recipe", b =>

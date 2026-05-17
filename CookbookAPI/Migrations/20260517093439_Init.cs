@@ -45,19 +45,25 @@ namespace CookbookAPI.Migrations
                 columns: table => new
                 {
                     IngredientId = table.Column<int>(type: "integer", nullable: false),
-                    RercpeId = table.Column<int>(type: "integer", nullable: false),
+                    RecipeId = table.Column<int>(type: "integer", nullable: false),
                     Amount = table.Column<double>(type: "double precision", nullable: false),
-                    Units = table.Column<int>(type: "integer", nullable: false),
-                    RecipeId = table.Column<int>(type: "integer", nullable: true)
+                    Units = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_IngredientsInRecipes", x => new { x.IngredientId, x.RercpeId });
+                    table.PrimaryKey("PK_IngredientsInRecipes", x => new { x.IngredientId, x.RecipeId });
+                    table.ForeignKey(
+                        name: "FK_IngredientsInRecipes_Ingredients_IngredientId",
+                        column: x => x.IngredientId,
+                        principalTable: "Ingredients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_IngredientsInRecipes_Recipes_RecipeId",
                         column: x => x.RecipeId,
                         principalTable: "Recipes",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -70,10 +76,10 @@ namespace CookbookAPI.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Ingredients");
+                name: "IngredientsInRecipes");
 
             migrationBuilder.DropTable(
-                name: "IngredientsInRecipes");
+                name: "Ingredients");
 
             migrationBuilder.DropTable(
                 name: "Recipes");

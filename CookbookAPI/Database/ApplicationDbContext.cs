@@ -15,7 +15,7 @@ namespace CookbookAPI.Database
         {
             modelBuilder.Entity<Recipe>().HasKey(x => x.Id);
             modelBuilder.Entity<Ingredient>().HasKey(x => x.Id);
-            modelBuilder.Entity<IngredientInRecipe>().HasKey(x => new { x.IngredientId, x.RercpeId });
+            modelBuilder.Entity<IngredientInRecipe>().HasKey(x => new { x.IngredientId, x.RecipeId });
 
             base.OnModelCreating(modelBuilder);
         }

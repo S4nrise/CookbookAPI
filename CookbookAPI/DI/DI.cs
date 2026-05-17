@@ -7,25 +7,18 @@ namespace CookbookAPI.DI
 {
     public static class DI
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddSwagger();
-            services.AddInfrastructure(configuration);
             services.AddServices();
 
             return services;
         }
 
-        public static IServiceCollection AddSwagger(this IServiceCollection services)
-        {
-            services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
-
-            return services;
-        }
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
             services.AddAutoMapper(typeof(Program));
             services.AddDbContext<ApplicationDbContext>(options =>
             {
@@ -34,11 +27,12 @@ namespace CookbookAPI.DI
 
             return services;
         }
-        public static IServiceCollection AddServices(this IServiceCollection services)
+        private static IServiceCollection AddServices(this IServiceCollection services)
         {
-            services.AddSingleton<IIngredientsRepository, IngredientsRepository>();
-            services.AddSingleton<IRecipesRepository, RecipesRepository>();
-            services.AddSingleton<IRecipesService, RecipesService>();
+            services.AddScoped<IIngredientsRepository, IngredientsRepository>();
+
+            services.AddScoped<IRecipesRepository, RecipesRepository>();
+            services.AddScoped<IRecipesService, RecipesService>();
 
             return services;
         }
