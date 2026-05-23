@@ -2,6 +2,7 @@
 using CookbookAPI.Database;
 using CookbookAPI.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace CookbookAPI.DI
 {
@@ -16,11 +17,14 @@ namespace CookbookAPI.DI
 
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddControllers();
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddAutoMapper(typeof(Program));
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<IApplicationDbContext, ApplicationDbContext>(options =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
             });
@@ -29,7 +33,7 @@ namespace CookbookAPI.DI
         }
         private static IServiceCollection AddServices(this IServiceCollection services)
         {
-            services.AddScoped<IIngredientsRepository, IngredientsRepository>();
+            services.AddScoped<IIngredientsService, IngredientsService>();
 
             services.AddScoped<IRecipesRepository, RecipesRepository>();
             services.AddScoped<IRecipesService, RecipesService>();

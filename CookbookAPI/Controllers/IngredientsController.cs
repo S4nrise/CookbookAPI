@@ -6,13 +6,13 @@ namespace CookbookAPI.Controllers
     [ApiController]
     [Route("[controller]")]
     public class IngredientsController(
-        IIngredientsRepository ingredientsRepository) : ControllerBase
+        IIngredientsService ingredientsRepository) : ControllerBase
     {
 
         [HttpPost("/AddIngredient")]
         public IActionResult AddIngredient(string name)
         {
-            var ingredientId = ingredientsRepository.AddIngredient(name.Trim());
+            var ingredientId = ingredientsRepository.CreateIngredient(name.Trim());
             return CreatedAtAction("GetIngredientById", new {id= ingredientId }, ingredientId);
         }
 

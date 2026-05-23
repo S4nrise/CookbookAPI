@@ -1,9 +1,10 @@
-﻿using CookbookAPI.Models;
+﻿using CookbookAPI.Abstractions;
+using CookbookAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CookbookAPI.Database
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
         public DbSet<Recipe> Recipes { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
