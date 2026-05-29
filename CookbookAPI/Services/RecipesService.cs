@@ -34,29 +34,40 @@ namespace CookbookAPI.Services
 
         public void DeleteRecipe(int id)
         {
-            dbContext.Recipes.Remove(GetRecipeById(id));
-            dbContext.SaveChanges();
+            var deletedRecipe = dbContext.Recipes
+                .Where(x => x.Id == id)
+                .ExecuteDelete();
+            if (deletedRecipe == 0) throw new RecipeNotFoundException(id);
         }
 
         public IReadOnlyList<RecipeVm> GetAllRecipes()
         {
-            var recipe = dbContext.Recipes.Include(x => x.Ingredients).ThenInclude(x=>x.Ingredient).ToList();
+            var recipe = dbContext.Recipes.AsNoTracking().Include(x => x.Ingredients).ThenInclude(x=>x.Ingredient).ToList();
             return mapper.Map<IReadOnlyList<RecipeVm>>(recipe);
         }
 
         public RecipeVm GetRecipe(int id)
         {
-            return mapper.Map<RecipeVm>(GetRecipeById(id));
+            var recipe = dbContext.Recipes
+                .AsNoTracking()
+                .Include(x=>x.Ingredients)
+                .ThenInclude(x=>x.Ingredient)
+                .FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
+
+            return mapper.Map<RecipeVm>(recipe);
         }
 
         private Recipe GetRecipeById(int id)
         {
-            return dbContext.Recipes.AsNoTracking().FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
+            return dbContext.Recipes
+                .Include(x => x.Ingredients)
+                .ThenInclude(x => x.Ingredient)
+                .FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
         }
 
         private Ingredient GetIngredientById(int id)
         {
-            return dbContext.Ingredients.AsNoTracking().FirstOrDefault(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
+            return dbContext.Ingredients.FirstOrDefault(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
         }
 
         public void RateRecipe(int id, int rate)

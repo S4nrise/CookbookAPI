@@ -11,6 +11,7 @@ namespace CookbookAPI.Configuration.Mappings
             CreateMap<IngredientInRecipeDto, IngredientInRecipe>();
             CreateMap<IngredientInRecipe, IngredientsInRecipeVm>()
                 .ForCtorParam(nameof(IngredientsInRecipeVm.Name), opt => opt.MapFrom(src => src.Ingredient.Name));
+            CreateMap<Ingredient, IngredientVm>();
         }
     }
 }

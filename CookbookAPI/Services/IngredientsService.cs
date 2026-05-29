@@ -1,11 +1,13 @@
-﻿using CookbookAPI.Abstractions;
+﻿using AutoMapper;
+using CookbookAPI.Abstractions;
+using CookbookAPI.Contracts;
 using CookbookAPI.Exceptions;
 using CookbookAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CookbookAPI.Services
 {
-    public class IngredientsService(IApplicationDbContext dbContext) : IIngredientsService
+    public class IngredientsService(IApplicationDbContext dbContext, IMapper mapper) : IIngredientsService
     {
         public int CreateIngredient(string name)
         {
@@ -27,7 +29,12 @@ namespace CookbookAPI.Services
             dbContext.SaveChanges();
         }
 
-        public IReadOnlyList<Ingredient> GetAllIngredients() => dbContext.Ingredients.AsNoTracking().ToList();
+        public IReadOnlyList<IngredientVm> GetAllIngredients()
+        {
+            var ingredients = dbContext.Ingredients.AsNoTracking().ToList();
+
+            return mapper.Map<IReadOnlyList<IngredientVm>>(ingredients);
+        }
 
         public Ingredient GetIngredientById(int id) => dbContext.Ingredients.AsNoTracking().FirstOrDefault(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
     }

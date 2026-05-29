@@ -45,7 +45,7 @@ namespace CookbookAPI.Controllers
         public IActionResult RateRecipeById(int id, int rate)
         {
             recipeService.RateRecipe(id, rate);
-            return NoContent();//Подумать, мб что-то стоит возвращать. 
+            return Ok();//Подумать, мб что-то стоит возвращать. 
         }
     }
 }

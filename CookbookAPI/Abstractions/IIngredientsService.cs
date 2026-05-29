@@ -1,4 +1,5 @@
-﻿using CookbookAPI.Models;
+﻿using CookbookAPI.Contracts;
+using CookbookAPI.Models;
 
 namespace CookbookAPI.Abstractions
 {
@@ -6,7 +7,7 @@ namespace CookbookAPI.Abstractions
     {
         public int CreateIngredient(string name);
         public void DeleteIngredient(int id);
-        public IReadOnlyList<Ingredient> GetAllIngredients();
+        public IReadOnlyList<IngredientVm> GetAllIngredients();
         public Ingredient GetIngredientById(int id);
     }
 }
