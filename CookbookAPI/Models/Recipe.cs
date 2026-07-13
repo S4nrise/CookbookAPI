@@ -6,6 +6,6 @@
         public string Name { get; set; }
         public string? Description { get; set; }
         public List<IngredientInRecipe> Ingredients { get; set; } = [];
-        public List<int> Rating { get; set; } = [];
+        public ICollection<Rating> Rating { get; set; } = [];
     }
 }

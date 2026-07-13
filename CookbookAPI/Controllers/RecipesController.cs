@@ -1,12 +1,14 @@
 ﻿using CookbookAPI.Abstractions;
 using CookbookAPI.Contracts;
+using CookbookAPI.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CookbookAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class RecipesController(IRecipesService recipeService) : ControllerBase
+    public class RecipesController(IRecipesService recipeService) : BaseController
     {
         [HttpGet("/Recipes")]
         public IActionResult GetRecipes()
@@ -21,9 +23,15 @@ namespace CookbookAPI.Controllers
         }
 
         [HttpPost("/AddRecipe")]
-        public IActionResult AddRecipe(CreateRecipeDto createRecipeDto)
+        public IActionResult AddRecipe([FromBody] CreateRecipeDto createRecipeDto)
         {
-            var recipeId = recipeService.CreateRecipe(createRecipeDto);
+            var userId = HttpContext.ExtractUserIdFromClaims();
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+            var recipeId = recipeService.CreateRecipe(userId.Value, createRecipeDto);
+
             return CreatedAtAction("GetRecipeById", new { id = recipeId }, recipeId);
         }
 
@@ -35,6 +43,7 @@ namespace CookbookAPI.Controllers
         }
 
         [HttpDelete("/DeleteRecipe/{id}")]
+        [Authorize(Policy = "PostsOwner")]
         public IActionResult DeleteRecipe(int id)
         {
             recipeService.DeleteRecipe(id);
@@ -42,10 +51,10 @@ namespace CookbookAPI.Controllers
         }
 
         [HttpPost("/RateRecipe/{id}")]
-        public IActionResult RateRecipeById(int id, int rate)
+        public IActionResult RateRecipeById(int id, RateRecipeDto rateRecipeDto)
         {
-            recipeService.RateRecipe(id, rate);
-            return Ok();//Подумать, мб что-то стоит возвращать. 
+            recipeService.RateRecipe(id, rateRecipeDto);
+            return Ok();
         }
     }
 }

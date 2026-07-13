@@ -6,27 +6,27 @@ namespace CookbookAPI.Controllers
     [ApiController]
     [Route("[controller]")]
     public class IngredientsController(
-        IIngredientsService ingredientsRepository) : ControllerBase
+        IIngredientsService ingredientsService) : BaseController
     {
 
         [HttpPost("/AddIngredient")]
         public IActionResult AddIngredient(string name)
         {
-            var ingredientId = ingredientsRepository.CreateIngredient(name.Trim());
+            var ingredientId = ingredientsService.CreateIngredient(name.Trim());
             return CreatedAtAction("GetIngredientById", new {id= ingredientId }, ingredientId);
         }
 
         [HttpDelete("/DeleteIngredient/{id}")]
         public IActionResult DeleteIngredient(int id)
         {
-            ingredientsRepository.DeleteIngredient(id);
+            ingredientsService.DeleteIngredient(id);
             return NoContent();
         }
 
         [HttpGet("/AllIngredients")]
-        public IActionResult GettAllIngredients() => Ok(ingredientsRepository.GetAllIngredients());
+        public IActionResult GettAllIngredients() => Ok(ingredientsService.GetAllIngredients());
 
         [HttpGet("/GetIngredient/{id}")]
-        public IActionResult GetIngredientById(int id) => Ok(ingredientsRepository.GetIngredientById(id));
+        public IActionResult GetIngredientById(int id) => Ok(ingredientsService.GetIngredientById(id));
     }
 }

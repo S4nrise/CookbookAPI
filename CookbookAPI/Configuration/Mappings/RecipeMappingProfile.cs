@@ -9,7 +9,7 @@ namespace CookbookAPI.Configuration.Mapping
         public RecipeMappingProfile()
         {
             CreateMap<Recipe, RecipeVm>()
-                .ForCtorParam(nameof(Recipe.Rating), opt => opt.MapFrom(src => src.Rating.Count == 0 ? 0 : src.Rating.Average()));
+                .ForCtorParam(nameof(Recipe.Rating), opt => opt.MapFrom(src => src.Rating.Count == 0 ? 0 : src.Rating.Average(v => v.Value)));
 
             CreateMap<CreateRecipeDto, Recipe>();
             //.ForMember(dest => dest.Id, opt => opt.Ignore());

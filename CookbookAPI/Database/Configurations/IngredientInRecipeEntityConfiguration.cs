@@ -8,8 +8,10 @@ namespace CookbookAPI.Database.Configurations
     {
         public void Configure(EntityTypeBuilder<IngredientInRecipe> builder)
         {
-            builder.HasOne(x => x.Recipe).WithMany(x => x.Ingredients).HasForeignKey(x=>x.RecipeId);
-            builder.HasOne(x => x.Ingredient).WithMany(x => x.Recipes).HasForeignKey(x=>x.IngredientId);
+            builder.HasKey(x => new { x.IngredientId, x.RecipeId });
+
+            builder.HasOne(x => x.Recipe).WithMany(x => x.Ingredients).HasForeignKey(x => x.RecipeId);
+            builder.HasOne(x => x.Ingredient).WithMany(x => x.Recipes).HasForeignKey(x => x.IngredientId);
         }
     }
 }

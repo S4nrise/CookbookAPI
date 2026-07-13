@@ -9,7 +9,7 @@ namespace CookbookAPI.Services
 {
     public class RecipesService(IApplicationDbContext dbContext, IMapper mapper) : IRecipesService
     {
-        public int CreateRecipe(CreateRecipeDto createRecipeDto)
+        public int CreateRecipe(int userId, CreateRecipeDto createRecipeDto)
         {
             var recipe = mapper.Map<Recipe>(createRecipeDto);
 
@@ -19,7 +19,7 @@ namespace CookbookAPI.Services
                 {
                     recipe.Ingredients!.Add(new IngredientInRecipe
                     {
-                        IngredientId = GetIngredientById(req.Id).Id,//Жестко подумать
+                        IngredientId = GetIngredientById(req.IngredientId).Id,//Жестко подумать//оставить req.IngredientId или в самом начале чекнуть что все переданные ингридиенты есть в бд.
                         Amount = req.Amount,
                         Units = req.Units,
                     });
@@ -42,7 +42,11 @@ namespace CookbookAPI.Services
 
         public IReadOnlyList<RecipeVm> GetAllRecipes()
         {
-            var recipe = dbContext.Recipes.AsNoTracking().Include(x => x.Ingredients).ThenInclude(x=>x.Ingredient).ToList();
+            var recipe = dbContext.Recipes
+                .AsNoTracking()
+                .Include(x => x.Ingredients)
+                .ThenInclude(x => x.Ingredient)
+                .ToList();
             return mapper.Map<IReadOnlyList<RecipeVm>>(recipe);
         }
 
@@ -50,54 +54,46 @@ namespace CookbookAPI.Services
         {
             var recipe = dbContext.Recipes
                 .AsNoTracking()
-                .Include(x=>x.Ingredients)
-                .ThenInclude(x=>x.Ingredient)
+                .Include(x => x.Ingredients)
+                .ThenInclude(x => x.Ingredient)
                 .FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
 
             return mapper.Map<RecipeVm>(recipe);
         }
 
-        private Recipe GetRecipeById(int id)
+        public void RateRecipe(int id, RateRecipeDto rateRecipeDto)
         {
-            return dbContext.Recipes
-                .Include(x => x.Ingredients)
-                .ThenInclude(x => x.Ingredient)
-                .FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
-        }
+            var recipe = GetRecipeByIdWithTracking(id);
 
-        private Ingredient GetIngredientById(int id)
-        {
-            return dbContext.Ingredients.FirstOrDefault(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
-        }
-
-        public void RateRecipe(int id, int rate)
-        {
-            var recipe = GetRecipeById(id);
-            recipe.Rating.Add(rate);
+            recipe.Rating.Add(new Rating
+            {
+                RecipeId = recipe.Id,
+                UserId = rateRecipeDto.UserId,
+                Value = rateRecipeDto.Value
+            });
 
             dbContext.SaveChanges();
         }
 
         public void UpdateRecipe(UpdateRecipeDto updateRecipeDto)
         {
-            var recipe = GetRecipeById(updateRecipeDto.Id);
+            var recipe = GetRecipeByIdWithTracking(updateRecipeDto.Id);
 
             recipe.Name = updateRecipeDto.Name?.Trim() ?? recipe.Name;
             recipe.Description = updateRecipeDto.Description?.Trim() ?? recipe.Description;
 
             if (updateRecipeDto.IngredientsInRecipeDto == null)
             {
-                //recipesRepository.UpdateRecipe(updateRecipeDto.Id, recipe);
                 dbContext.SaveChanges();
                 return;
             }
 
-            var incomingIngredientId = updateRecipeDto.IngredientsInRecipeDto.Select(x => x.Id).ToList();
+            var incomingIngredientId = updateRecipeDto.IngredientsInRecipeDto.Select(x => x.IngredientId).ToList();
             recipe.Ingredients.RemoveAll(x => !incomingIngredientId.Contains(x.IngredientId));
 
             foreach (var req in updateRecipeDto.IngredientsInRecipeDto)
             {
-                var existing = recipe.Ingredients.FirstOrDefault(x => x.IngredientId == req.Id);
+                var existing = recipe.Ingredients.FirstOrDefault(x => x.IngredientId == req.IngredientId);
                 if (existing.Amount != null)
                 {
                     existing.Amount = req.Amount;
@@ -105,7 +101,7 @@ namespace CookbookAPI.Services
                 }
                 else
                 {
-                    var foundIngredient = GetIngredientById(req.Id);
+                    var foundIngredient = GetIngredientById(req.IngredientId);
 
                     if (foundIngredient != null)
                     {
@@ -119,8 +115,20 @@ namespace CookbookAPI.Services
                 }
             }
 
-            //recipesRepository.UpdateRecipe(updateRecipeDto.Id, recipe);
             dbContext.SaveChanges();
+        }
+
+        private Recipe GetRecipeByIdWithTracking(int id)
+        {
+            return dbContext.Recipes
+                .Include(x => x.Ingredients)
+                .ThenInclude(x => x.Ingredient)
+                .FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
+        }
+
+        private Ingredient GetIngredientById(int id)
+        {
+            return dbContext.Ingredients.FirstOrDefault(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
         }
     }
 }

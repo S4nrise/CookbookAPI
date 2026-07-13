@@ -8,6 +8,9 @@ namespace CookbookAPI.Abstractions
         public DbSet<Recipe> Recipes { get; }
         public DbSet<Ingredient> Ingredients { get; }
         public DbSet<IngredientInRecipe> IngredientsInRecipes { get; }
+        public DbSet<Rating> Rating { get; }
+        public DbSet<User> Users { get; }
+        public DbSet<JwtToken> JwtTokens { get; }
 
         public int SaveChanges();
     }
