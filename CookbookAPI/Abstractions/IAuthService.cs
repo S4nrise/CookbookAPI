@@ -5,9 +5,11 @@ namespace CookbookAPI.Abstractions
 {
     public interface IAuthService
     {
-        JwtTokenVm SignUp(CreateUserDto createUserDtodto);
-        JwtTokenVm? LogIn(LoginUserDto loginUserDto);
+        LogInResponse SignUp(CreateUserDto createUserDtodto);
+        LogInResponse? LogIn(LoginUserDto loginUserDto);
         bool LogOut(int userId);
         bool VerifyToken(int userId, string token);
+        LogInResponse? Refresh(string refreshToken);
+        void Revoke(string refreshToken);
     }
 }

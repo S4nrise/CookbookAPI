@@ -11,6 +11,7 @@ namespace CookbookAPI.Abstractions
         public DbSet<Rating> Rating { get; }
         public DbSet<User> Users { get; }
         public DbSet<JwtToken> JwtTokens { get; }
+        public DbSet<RefreshToken> RefreshTokens { get; }
 
         public int SaveChanges();
     }

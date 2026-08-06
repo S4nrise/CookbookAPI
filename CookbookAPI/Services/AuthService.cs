@@ -2,6 +2,7 @@
 using CookbookAPI.Contracts;
 using CookbookAPI.Models;
 using CookbookAPI.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace CookbookAPI.Services
 {
@@ -9,7 +10,7 @@ namespace CookbookAPI.Services
         IApplicationDbContext dbContext,
         IJwtTokenGenerator jwtTokenGenerator) : IAuthService
     {
-        public JwtTokenVm? LogIn(LoginUserDto loginUserDto)
+        public LogInResponse? LogIn(LoginUserDto loginUserDto)
         {
             var user = dbContext.Users.FirstOrDefault(user => user.Name == loginUserDto.Name);
 
@@ -21,10 +22,10 @@ namespace CookbookAPI.Services
             if (!PasswordHasher.VerifyPassword(user.Password, loginUserDto.Password))
                 return null;
 
-            var token = UpdateToken(user);
+            var (jwt, refresh) = UpdateToken(user);
             dbContext.SaveChanges();
 
-            return token?.ToJwtTokenVm();
+            return CreateResponse(jwt, refresh);
         }
 
         public bool LogOut(int userId)
@@ -47,7 +48,7 @@ namespace CookbookAPI.Services
             return true;
         }
 
-        public JwtTokenVm SignUp(CreateUserDto createUserDtodto)
+        public LogInResponse SignUp(CreateUserDto createUserDtodto)
         {
             var user = new User
             {
@@ -58,23 +59,52 @@ namespace CookbookAPI.Services
             dbContext.Users.Add(user);
             dbContext.SaveChanges();
 
-            var token = UpdateToken(user);
+            var (jwt, refresh) = UpdateToken(user);
 
             dbContext.SaveChanges();
 
-            return token.ToJwtTokenVm();
+            return CreateResponse(jwt, refresh);
         }
 
         public bool VerifyToken(int userId, string token)
         {
             var jwtToken = dbContext.JwtTokens.FirstOrDefault(token => token.UserId == userId);
-            if (jwtToken is null) 
+            if (jwtToken is null)
                 return false;
 
             return jwtToken.Token == token && jwtToken.ExpiresAt > DateTime.UtcNow;
         }
 
-        private JwtToken UpdateToken(User user)
+        public LogInResponse? Refresh(string refreshToken)
+        {
+            var existingRefreshToken = dbContext.RefreshTokens
+                .Include(rt => rt.User)
+                .FirstOrDefault(rt => rt.Token == refreshToken && rt.ExpiresAt > DateTime.UtcNow);
+
+            if (existingRefreshToken is null)
+                return null;
+
+            var (jwt, refresh) = UpdateToken(existingRefreshToken.User);
+
+            dbContext.SaveChanges();
+
+            return CreateResponse(jwt, refresh);
+        }
+
+        public void Revoke(string refreshToken)
+        {
+            var existingRefreshToken = dbContext.RefreshTokens
+                .Include(rt => rt.User)
+                .FirstOrDefault(rt => rt.Token == refreshToken && rt.ExpiresAt > DateTime.UtcNow);
+
+            if (existingRefreshToken is null)
+                return;
+
+            dbContext.RefreshTokens.Remove(existingRefreshToken);
+            dbContext.SaveChanges();
+        }
+
+        private (JwtToken Jwt, RefreshToken Refresh) UpdateToken(User user)
         {
             var token = jwtTokenGenerator.GenerateJwtToken(user);
             var oldToken = dbContext.JwtTokens.FirstOrDefault(t => t.UserId == user.Id);
@@ -85,7 +115,13 @@ namespace CookbookAPI.Services
             }
             dbContext.JwtTokens.Add(token);
 
-            return token;
+            var refreshToken = jwtTokenGenerator.GetRefreshToken(user.Id);
+            dbContext.RefreshTokens.Add(refreshToken);
+
+            return (token, refreshToken);
         }
+
+        private static LogInResponse CreateResponse(JwtToken jwtToken, RefreshToken refreshToken)
+            => new(jwtToken.UserId, jwtToken.Token, refreshToken.Token);
     }
 }

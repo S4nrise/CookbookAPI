@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace CookbookAPI.Services
 {
@@ -47,5 +48,12 @@ namespace CookbookAPI.Services
                 ExpiresAt = expiration,
             };
         }
+
+        public RefreshToken GetRefreshToken(int userId) => new()
+        {
+            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
+            UserId = userId,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+        };
     }
 }
