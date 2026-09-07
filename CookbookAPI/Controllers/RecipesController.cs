@@ -11,18 +11,33 @@ namespace CookbookAPI.Controllers
     public class RecipesController(IRecipesService recipeService) : BaseController
     {
         [HttpGet("/Recipes")]
+        [Authorize]
         public IActionResult GetRecipes()
         {
-            return Ok(recipeService.GetAllRecipes());
+            var userId = HttpContext.ExtractUserIdFromClaims();
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(recipeService.GetAllRecipes(userId.Value));
         }
 
         [HttpGet("/GetRecipeById/{id}")]
+        [Authorize]
         public IActionResult GetRecipeById(int id)
         {
-            return Ok(recipeService.GetRecipe(id));
+            var userId = HttpContext.ExtractUserIdFromClaims();
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(recipeService.GetRecipe(userId.Value, id));
         }
 
         [HttpPost("/AddRecipe")]
+        [Authorize]
         public IActionResult AddRecipe([FromBody] CreateRecipeDto createRecipeDto)
         {
             var userId = HttpContext.ExtractUserIdFromClaims();
@@ -36,24 +51,43 @@ namespace CookbookAPI.Controllers
         }
 
         [HttpPut("/UpdateRecipe/{id}")]
+        [Authorize]
         public IActionResult UpdateRecipe(UpdateRecipeDto updateRecipeDto)
         {
-            recipeService.UpdateRecipe(updateRecipeDto);
+            var userId = HttpContext.ExtractUserIdFromClaims();
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+            recipeService.UpdateRecipe(userId.Value, updateRecipeDto);
             return NoContent();
         }
 
         [HttpDelete("/DeleteRecipe/{id}")]
-        [Authorize(Policy = "PostsOwner")]
+        [Authorize]
         public IActionResult DeleteRecipe(int id)
         {
-            recipeService.DeleteRecipe(id);
+            var userId = HttpContext.ExtractUserIdFromClaims();
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+            recipeService.DeleteRecipe(userId.Value, id);
+            
             return NoContent();
         }
 
         [HttpPost("/RateRecipe/{id}")]
+        [Authorize]
         public IActionResult RateRecipeById(int id, RateRecipeDto rateRecipeDto)
         {
-            recipeService.RateRecipe(id, rateRecipeDto);
+            var userId = HttpContext.ExtractUserIdFromClaims();
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+            recipeService.RateRecipe(userId.Value, id, rateRecipeDto);
+            
             return Ok();
         }
     }

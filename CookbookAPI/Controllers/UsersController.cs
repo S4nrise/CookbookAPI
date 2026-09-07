@@ -1,5 +1,6 @@
 ﻿using CookbookAPI.Abstractions;
 using CookbookAPI.Contracts;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,14 +8,20 @@ namespace CookbookAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UsersController(IAuthService authService) : BaseController
+    public class UsersController(IAuthService authService, IValidator<SignUpDto> signUpValidator) : BaseController
     {
         [AllowAnonymous]
         [HttpPost("/registration")]
-        public ActionResult<LogInResponse> Registration([FromBody] CreateUserDto createUserDto)
+        public ActionResult<LogInResponse> Registration([FromBody] SignUpDto signUpUserDto)
         {
-            var token = authService.SignUp(createUserDto);
-            return Ok(token);
+            var validationResult = signUpValidator.Validate(signUpUserDto);
+            if (validationResult.IsValid)
+            {
+                var token = authService.SignUp(signUpUserDto);
+
+                return Ok(token);
+            }
+            return BadRequest();
         }
 
         [AllowAnonymous]

@@ -7,5 +7,6 @@
         public string? Description { get; set; }
         public List<IngredientInRecipe> Ingredients { get; set; } = [];
         public ICollection<Rating> Rating { get; set; } = [];
+        public int UserId {  get; set; }
     }
 }

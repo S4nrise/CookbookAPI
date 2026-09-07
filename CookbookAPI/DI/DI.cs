@@ -3,6 +3,7 @@ using CookbookAPI.Configuration;
 using CookbookAPI.Database;
 using CookbookAPI.Politics;
 using CookbookAPI.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -115,6 +116,7 @@ namespace CookbookAPI.DI
             services.AddScoped<IRecipesService, RecipesService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddValidatorsFromAssemblyContaining<Program>();
 
             return services;
         }

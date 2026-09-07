@@ -9,7 +9,7 @@ namespace CookbookAPI.Services
 {
     public class UserService(IApplicationDbContext dbContext, IMapper mapper) : IUserService
     {
-        public int CreateUser(CreateUserDto createUserDto)
+        public int CreateUser(SignUpDto createUserDto)
         {
             var user = mapper.Map<User>(createUserDto);
             dbContext.Users.Add(user);

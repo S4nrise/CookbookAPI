@@ -4,7 +4,7 @@ namespace CookbookAPI.Abstractions
 {
     public interface IUserService
     {
-        public int CreateUser(CreateUserDto createUserDto);
+        public int CreateUser(SignUpDto createUserDto);
         public void DeleteUser(int id, DeleteUserDto deleteUserDto);
     }
 }

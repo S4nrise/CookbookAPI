@@ -2,6 +2,7 @@
 using CookbookAPI.Contracts;
 using CookbookAPI.Models;
 using CookbookAPI.Utils;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace CookbookAPI.Services
@@ -48,7 +49,7 @@ namespace CookbookAPI.Services
             return true;
         }
 
-        public LogInResponse SignUp(CreateUserDto createUserDtodto)
+        public LogInResponse SignUp(SignUpDto createUserDtodto)
         {
             var user = new User
             {

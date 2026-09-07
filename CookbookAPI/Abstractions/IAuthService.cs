@@ -5,7 +5,7 @@ namespace CookbookAPI.Abstractions
 {
     public interface IAuthService
     {
-        LogInResponse SignUp(CreateUserDto createUserDtodto);
+        LogInResponse SignUp(SignUpDto createUserDtodto);
         LogInResponse? LogIn(LoginUserDto loginUserDto);
         bool LogOut(int userId);
         bool VerifyToken(int userId, string token);
