@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /CookbookAPI/appsettings.Development.json
+/CookbookAPI.Tests/CookbookAPI.Tests.csproj
+/CookbookAPI.Tests/AutoMapperProfilesTests.cs
