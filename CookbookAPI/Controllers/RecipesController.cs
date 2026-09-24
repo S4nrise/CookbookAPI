@@ -12,7 +12,7 @@ namespace CookbookAPI.Controllers
     {
         [HttpGet("/Recipes")]
         [Authorize]
-        public IActionResult GetRecipes()
+        public IActionResult GetRecipes([FromQuery] RecipeFilterDto recipeFilterDto)
         {
             var userId = HttpContext.ExtractUserIdFromClaims();
             if (userId == null)
@@ -20,7 +20,7 @@ namespace CookbookAPI.Controllers
                 return Unauthorized();
             }
 
-            return Ok(recipeService.GetAllRecipes(userId.Value));
+            return Ok(recipeService.GetAllRecipes(userId.Value, recipeFilterDto));
         }
 
         [HttpGet("/GetRecipeById/{id}")]

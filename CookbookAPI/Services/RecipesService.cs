@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using CookbookAPI.Abstractions;
 using CookbookAPI.Contracts;
 using CookbookAPI.Exceptions;
 using CookbookAPI.Models;
+using CookbookAPI.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CookbookAPI.Services
@@ -28,16 +30,46 @@ namespace CookbookAPI.Services
             if (deletedRecipe == 0) throw new RecipeNotFoundException(id);
         }
 
-        public IReadOnlyList<RecipeVm> GetAllRecipes(int userId)//сортировка по рейтингу и фильтр по наименованию
+        public IReadOnlyList<RecipeVm> GetAllRecipes(int userId, RecipeFilterDto recipeFilterDto)//сортировка по рейтингу и фильтр по наименованию
         {
-            var recipe = dbContext.Recipes
+            IQueryable<Recipe> query = dbContext.Recipes.AsNoTracking();
+            if (!string.IsNullOrWhiteSpace(recipeFilterDto.SearchTerm))
+            {
+                var search = recipeFilterDto.SearchTerm.Trim().ToLower();
+                query = query.Where(x => x.Name.ToLower().Contains(recipeFilterDto.SearchTerm));
+            }
+
+            if (recipeFilterDto.Rating.HasValue)
+            {
+                query = query.Where(x => x.Rating.Any() && x.Rating.Average(r => r.Value) >= recipeFilterDto.Rating.Value);
+            }
+
+            if (recipeFilterDto.UserId is not null)
+            {
+                var author = recipeFilterDto.UserId;
+                query = query.Where(x => x.UserId == author);
+            }
+            query = (recipeFilterDto.SortBy, recipeFilterDto.IsDescending) switch
+            {
+                (RecipeSortBy.Title, false) => query.OrderBy(x => x.Name),
+                (RecipeSortBy.Title, true) => query.OrderByDescending(x => x.Name),
+
+                (RecipeSortBy.Rating, false) => query.OrderBy(x => x.Rating.Any() ? x.Rating.Average(r => r.Value) : 0),
+                (RecipeSortBy.Rating, true) => query.OrderByDescending(x => x.Rating.Any() ? x.Rating.Average(r => r.Value) : 0),
+                
+                _ => query.OrderByDescending(r => r.Id)
+            };
+
+            return query.ProjectTo<RecipeVm>(mapper.ConfigurationProvider).ToList();
+
+            /*var recipe = dbContext.Recipes
                 .AsNoTracking()
-                .Where(x=>x.UserId == userId)
-                .Include(x=>x.Rating)
+                .Where(x => x.UserId == userId)
+                .Include(x => x.Rating)
                 .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
                 .ToList();
-            return mapper.Map<IReadOnlyList<RecipeVm>>(recipe);
+            return mapper.Map<IReadOnlyList<RecipeVm>>(recipe);*/
         }
 
         public RecipeVm GetRecipe(int userId, int id)
@@ -116,7 +148,7 @@ namespace CookbookAPI.Services
                 .ThenInclude(x => x.Ingredient)
                 .FirstOrDefault(x => x.Id == id && x.UserId == userId) ?? throw new RecipeNotFoundException(id);
         }
-        
+
         private Ingredient GetIngredientById(int id)
         {
             return dbContext.Ingredients.FirstOrDefault(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
