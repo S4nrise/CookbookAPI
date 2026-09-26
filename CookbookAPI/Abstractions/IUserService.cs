@@ -4,7 +4,7 @@ namespace CookbookAPI.Abstractions
 {
     public interface IUserService
     {
-        public int CreateUser(SignUpDto createUserDto);
-        public void DeleteUser(int id, DeleteUserDto deleteUserDto);
+        public Task<int> CreateUserAsync(SignUpDto createUserDto, CancellationToken cancellationToken);
+        public Task DeleteUserAsync(int id, DeleteUserDto deleteUserDto, CancellationToken cancellationToken);
     }
 }

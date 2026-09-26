@@ -8,25 +8,24 @@ namespace CookbookAPI.Controllers
     public class IngredientsController(
         IIngredientsService ingredientsService) : BaseController
     {
-
         [HttpPost("/AddIngredient")]
-        public IActionResult AddIngredient(string name)
+        public async Task<IActionResult> AddIngredientAsync(string name, CancellationToken cancellationToken)
         {
-            var ingredientId = ingredientsService.CreateIngredient(name.Trim());
+            var ingredientId = await ingredientsService.CreateIngredientAsync(name.Trim(), cancellationToken);
             return CreatedAtAction("GetIngredientById", new {id= ingredientId }, ingredientId);
         }
 
         [HttpDelete("/DeleteIngredient/{id}")]
-        public IActionResult DeleteIngredient(int id)
+        public async Task<IActionResult> DeleteIngredientAsync(int id, CancellationToken cancellationToken)
         {
-            ingredientsService.DeleteIngredient(id);
+            await ingredientsService.DeleteIngredientAsync(id, cancellationToken);
             return NoContent();
         }
 
         [HttpGet("/AllIngredients")]
-        public IActionResult GettAllIngredients() => Ok(ingredientsService.GetAllIngredients());
+        public async Task<IActionResult> GettAllIngredientsAsync(CancellationToken cancellationToken) => Ok(await ingredientsService.GetAllIngredientsAsync(cancellationToken));
 
         [HttpGet("/GetIngredient/{id}")]
-        public IActionResult GetIngredientById(int id) => Ok(ingredientsService.GetIngredientById(id));
+        public async Task<IActionResult> GetIngredientByIdAsync(int id, CancellationToken cancellationToken) => Ok(await ingredientsService.GetIngredientByIdAsync(id, cancellationToken));
     }
 }

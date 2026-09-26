@@ -9,20 +9,20 @@ namespace CookbookAPI.Services
 {
     public class UserService(IApplicationDbContext dbContext, IMapper mapper) : IUserService
     {
-        public int CreateUser(SignUpDto createUserDto)
+        public async Task<int> CreateUserAsync(SignUpDto createUserDto, CancellationToken cancellationToken)
         {
             var user = mapper.Map<User>(createUserDto);
             dbContext.Users.Add(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             return user.Id;
         }
 
-        public void DeleteUser(int id, DeleteUserDto deleteUserDto)
+        public async Task DeleteUserAsync(int id, DeleteUserDto deleteUserDto, CancellationToken cancellationToken)
         {
-            var deletedUser = dbContext.Users
+            var deletedUser = await dbContext.Users
                 .Where(user => user.Id == id)
-                .ExecuteDelete();
+                .ExecuteDeleteAsync();
             if (deletedUser == 0) throw new UserNotFoundException(id);
         }
 

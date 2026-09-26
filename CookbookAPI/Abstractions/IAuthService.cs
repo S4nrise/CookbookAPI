@@ -5,11 +5,11 @@ namespace CookbookAPI.Abstractions
 {
     public interface IAuthService
     {
-        LogInResponse SignUp(SignUpDto createUserDtodto);
-        LogInResponse? LogIn(LoginUserDto loginUserDto);
-        bool LogOut(int userId);
-        bool VerifyToken(int userId, string token);
-        LogInResponse? Refresh(string refreshToken);
-        void Revoke(string refreshToken);
+        Task<LogInResponse> SignUpAsync(SignUpDto createUserDtodto, CancellationToken cancellationToken);
+        Task<LogInResponse?> LogInAsync(LoginUserDto loginUserDto, CancellationToken cancellationToken);
+        Task<bool> LogOutAsync(int userId, CancellationToken cancellationToken);
+        Task<bool> VerifyTokenAsync(int userId, string token, CancellationToken cancellationToken);
+        Task<LogInResponse?> RefreshAsync(string refreshToken, CancellationToken cancellationToken);
+        Task RevokeAsync(string refreshToken, CancellationToken cancellationToken);
     }
 }

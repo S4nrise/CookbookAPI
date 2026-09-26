@@ -9,7 +9,7 @@ namespace CookbookAPI.Services
 {
     public class IngredientsService(IApplicationDbContext dbContext, IMapper mapper) : IIngredientsService
     {
-        public int CreateIngredient(string name)
+        public async Task<int> CreateIngredientAsync(string name, CancellationToken cancellationToken)
         {
             var ingredient = new Ingredient()
             {
@@ -17,25 +17,27 @@ namespace CookbookAPI.Services
             };
 
             dbContext.Ingredients.Add(ingredient);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             return ingredient.Id;
         }
 
-        public void DeleteIngredient(int id)
+        public async Task DeleteIngredientAsync(int id, CancellationToken cancellationToken)
         {
-            var ingredient = GetIngredientById(id);
+            var ingredient = await GetIngredientByIdAsync(id, cancellationToken);
             dbContext.Ingredients.Remove(ingredient);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
         }
 
-        public IReadOnlyList<IngredientVm> GetAllIngredients()
+        public async Task<IReadOnlyList<IngredientVm>> GetAllIngredientsAsync(CancellationToken cancellationToken)
         {
-            var ingredients = dbContext.Ingredients.AsNoTracking().ToList();
+            var ingredients = await dbContext.Ingredients.AsNoTracking().ToListAsync();
 
             return mapper.Map<IReadOnlyList<IngredientVm>>(ingredients);
         }
 
-        public Ingredient GetIngredientById(int id) => dbContext.Ingredients.AsNoTracking().FirstOrDefault(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
+        public async Task<Ingredient> GetIngredientByIdAsync(int id, CancellationToken cancellationToken)
+            => await dbContext.Ingredients.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
     }
 }

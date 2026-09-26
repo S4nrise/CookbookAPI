@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
@@ -56,7 +55,7 @@ namespace CookbookAPI.DI
 
                 options.Events = new JwtBearerEvents
                 {
-                    OnTokenValidated = context =>
+                    OnTokenValidated = async context =>
                     {
                         var authService =
                         context.HttpContext.RequestServices.GetRequiredService<IAuthService>();
@@ -64,13 +63,11 @@ namespace CookbookAPI.DI
                         var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                         if (userId is null
                         || context.SecurityToken.ValidTo < DateTime.UtcNow
-                        || !authService.VerifyToken(int.Parse(userId), context.SecurityToken.UnsafeToString())
+                        || ! await authService.VerifyTokenAsync(int.Parse(userId), context.SecurityToken.UnsafeToString(), context.HttpContext.RequestAborted)
                         )
                         {
                             context.Fail("Unauthorized");
                         }
-
-                        return Task.CompletedTask;
                     }
                 };
             });

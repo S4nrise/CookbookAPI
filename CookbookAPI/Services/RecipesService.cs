@@ -11,26 +11,26 @@ namespace CookbookAPI.Services
 {
     public class RecipesService(IApplicationDbContext dbContext, IMapper mapper) : IRecipesService
     {
-        public int CreateRecipe(int userId, CreateRecipeDto createRecipeDto)
+        public async Task<int> CreateRecipeAsync(int userId, CreateRecipeDto createRecipeDto, CancellationToken cancellationToken)
         {
             var recipe = mapper.Map<Recipe>(createRecipeDto);
             recipe.UserId = userId;
 
-            dbContext.Recipes.Add(recipe);
-            dbContext.SaveChanges();
+            await dbContext.Recipes.AddAsync(recipe);
+            await dbContext.SaveChangesAsync();
 
             return recipe.Id;
         }
 
-        public void DeleteRecipe(int userId, int id)
+        public async Task DeleteRecipeAsync(int userId, int id, CancellationToken cancellationToken)
         {
-            var deletedRecipe = dbContext.Recipes
+            var deletedRecipe = await dbContext.Recipes
                 .Where(x => x.Id == id && x.UserId == userId)
-                .ExecuteDelete();
+                .ExecuteDeleteAsync();
             if (deletedRecipe == 0) throw new RecipeNotFoundException(id);
         }
 
-        public IReadOnlyList<RecipeVm> GetAllRecipes(int userId, RecipeFilterDto recipeFilterDto)//сортировка по рейтингу и фильтр по наименованию
+        public async Task<IReadOnlyList<RecipeVm>> GetAllRecipesAsync(int userId, RecipeFilterDto recipeFilterDto, CancellationToken cancellationToken)
         {
             IQueryable<Recipe> query = dbContext.Recipes.AsNoTracking();
             if (!string.IsNullOrWhiteSpace(recipeFilterDto.SearchTerm))
@@ -60,7 +60,7 @@ namespace CookbookAPI.Services
                 _ => query.OrderByDescending(r => r.Id)
             };
 
-            return query.ProjectTo<RecipeVm>(mapper.ConfigurationProvider).ToList();
+            return await query.ProjectTo<RecipeVm>(mapper.ConfigurationProvider).ToListAsync();
 
             /*var recipe = dbContext.Recipes
                 .AsNoTracking()
@@ -72,21 +72,21 @@ namespace CookbookAPI.Services
             return mapper.Map<IReadOnlyList<RecipeVm>>(recipe);*/
         }
 
-        public RecipeVm GetRecipe(int userId, int id)
+        public async Task<RecipeVm> GetRecipeAsync(int userId, int id, CancellationToken cancellationToken)
         {
-            var recipe = dbContext.Recipes
+            var recipe = await dbContext.Recipes
                 .AsNoTracking()
                 .Include(x => x.Rating)
                 .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
-                .FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
+                .FirstOrDefaultAsync(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
 
             return mapper.Map<RecipeVm>(recipe);
         }
 
-        public void RateRecipe(int userId, int id, RateRecipeDto rateRecipeDto)
+        public async Task RateRecipeAsync(int userId, int id, RateRecipeDto rateRecipeDto, CancellationToken cancellationToken)
         {
-            var recipe = dbContext.Recipes.FirstOrDefault(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
+            var recipe = await dbContext.Recipes.FirstOrDefaultAsync(x => x.Id == id) ?? throw new RecipeNotFoundException(id);
 
             recipe.Rating.Add(new Rating
             {
@@ -95,19 +95,19 @@ namespace CookbookAPI.Services
                 Value = rateRecipeDto.Value
             });
 
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
         }
 
-        public void UpdateRecipe(int userId, UpdateRecipeDto updateRecipeDto)
+        public async Task UpdateRecipeAsync(int userId, UpdateRecipeDto updateRecipeDto, CancellationToken cancellationToken)
         {
-            var recipe = GetRecipeByIdWithTracking(updateRecipeDto.Id, userId);
+            var recipe = await GetRecipeByIdWithTrackingAsync(updateRecipeDto.Id, userId, cancellationToken);
 
             recipe.Name = updateRecipeDto.Name?.Trim() ?? recipe.Name;
             recipe.Description = updateRecipeDto.Description?.Trim() ?? recipe.Description;
 
             if (updateRecipeDto.IngredientsInRecipeDto == null)
             {
-                dbContext.SaveChanges();
+                await dbContext.SaveChangesAsync();
                 return;
             }
 
@@ -124,7 +124,7 @@ namespace CookbookAPI.Services
                 }
                 else
                 {
-                    var foundIngredient = GetIngredientById(req.IngredientId);
+                    var foundIngredient = GetIngredientByIdAsync(req.IngredientId, cancellationToken);
 
                     if (foundIngredient != null)
                     {
@@ -138,20 +138,20 @@ namespace CookbookAPI.Services
                 }
             }
 
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
         }
 
-        private Recipe GetRecipeByIdWithTracking(int id, int userId)
+        private async Task<Recipe> GetRecipeByIdWithTrackingAsync(int id, int userId, CancellationToken cancellationToken)
         {
-            return dbContext.Recipes
+            return await dbContext.Recipes
                 .Include(x => x.Ingredients)
                 .ThenInclude(x => x.Ingredient)
-                .FirstOrDefault(x => x.Id == id && x.UserId == userId) ?? throw new RecipeNotFoundException(id);
+                .FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId) ?? throw new RecipeNotFoundException(id);
         }
 
-        private Ingredient GetIngredientById(int id)
+        private async Task<Ingredient> GetIngredientByIdAsync(int id, CancellationToken cancellationToken)
         {
-            return dbContext.Ingredients.FirstOrDefault(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
+            return await dbContext.Ingredients.FirstOrDefaultAsync(x => x.Id == id) ?? throw new IngredientNotFoundException(id);
         }
     }
 }

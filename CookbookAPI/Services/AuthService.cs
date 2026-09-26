@@ -11,9 +11,9 @@ namespace CookbookAPI.Services
         IApplicationDbContext dbContext,
         IJwtTokenGenerator jwtTokenGenerator) : IAuthService
     {
-        public LogInResponse? LogIn(LoginUserDto loginUserDto)
+        public async Task<LogInResponse?> LogInAsync(LoginUserDto loginUserDto, CancellationToken cancellationToken)
         {
-            var user = dbContext.Users.FirstOrDefault(user => user.Name == loginUserDto.Name);
+            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Name == loginUserDto.Name);
 
             if (user is null)
             {
@@ -23,33 +23,33 @@ namespace CookbookAPI.Services
             if (!PasswordHasher.VerifyPassword(user.Password, loginUserDto.Password))
                 return null;
 
-            var (jwt, refresh) = UpdateToken(user);
-            dbContext.SaveChanges();
+            var (jwt, refresh) = await UpdateTokenAsync(user, cancellationToken);
+            await dbContext.SaveChangesAsync();
 
             return CreateResponse(jwt, refresh);
         }
 
-        public bool LogOut(int userId)
+        public async Task<bool> LogOutAsync(int userId, CancellationToken cancellationToken)
         {
-            var user = dbContext.Users.FirstOrDefault(user => user.Id == userId);
+            var user = await dbContext.Users.FirstOrDefaultAsync(user => user.Id == userId);
             if (user is null)
             {
                 return false;
             }
 
-            var token = dbContext.JwtTokens.FirstOrDefault(token => token.UserId == userId);
+            var token = await dbContext.JwtTokens.FirstOrDefaultAsync(token => token.UserId == userId);
             if (token is null)
             {
                 return false;
             }
 
             dbContext.JwtTokens.Remove(token);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             return true;
         }
 
-        public LogInResponse SignUp(SignUpDto createUserDtodto)
+        public async Task<LogInResponse> SignUpAsync(SignUpDto createUserDtodto, CancellationToken cancellationToken)
         {
             var user = new User
             {
@@ -57,67 +57,67 @@ namespace CookbookAPI.Services
                 Password = PasswordHasher.HashPassword(createUserDtodto.Password),
             };
 
-            dbContext.Users.Add(user);
-            dbContext.SaveChanges();
+            await dbContext.Users.AddAsync(user);
+            await dbContext.SaveChangesAsync();
 
-            var (jwt, refresh) = UpdateToken(user);
+            var (jwt, refresh) = await UpdateTokenAsync(user, cancellationToken);
 
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             return CreateResponse(jwt, refresh);
         }
 
-        public bool VerifyToken(int userId, string token)
+        public async Task<bool> VerifyTokenAsync(int userId, string token, CancellationToken cancellationToken)
         {
-            var jwtToken = dbContext.JwtTokens.FirstOrDefault(token => token.UserId == userId);
+            var jwtToken = await dbContext.JwtTokens.FirstOrDefaultAsync(token => token.UserId == userId);
             if (jwtToken is null)
                 return false;
 
             return jwtToken.Token == token && jwtToken.ExpiresAt > DateTime.UtcNow;
         }
 
-        public LogInResponse? Refresh(string refreshToken)
+        public async Task<LogInResponse?> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
         {
-            var existingRefreshToken = dbContext.RefreshTokens
+            var existingRefreshToken = await dbContext.RefreshTokens
                 .Include(rt => rt.User)
-                .FirstOrDefault(rt => rt.Token == refreshToken && rt.ExpiresAt > DateTime.UtcNow);
+                .FirstOrDefaultAsync(rt => rt.Token == refreshToken && rt.ExpiresAt > DateTime.UtcNow);
 
             if (existingRefreshToken is null)
                 return null;
 
-            var (jwt, refresh) = UpdateToken(existingRefreshToken.User);
+            var (jwt, refresh) = await UpdateTokenAsync(existingRefreshToken.User, cancellationToken);
 
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             return CreateResponse(jwt, refresh);
         }
 
-        public void Revoke(string refreshToken)
+        public async Task RevokeAsync(string refreshToken, CancellationToken cancellationToken)
         {
-            var existingRefreshToken = dbContext.RefreshTokens
+            var existingRefreshToken = await dbContext.RefreshTokens
                 .Include(rt => rt.User)
-                .FirstOrDefault(rt => rt.Token == refreshToken && rt.ExpiresAt > DateTime.UtcNow);
+                .FirstOrDefaultAsync(rt => rt.Token == refreshToken && rt.ExpiresAt > DateTime.UtcNow);
 
             if (existingRefreshToken is null)
                 return;
 
             dbContext.RefreshTokens.Remove(existingRefreshToken);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
         }
 
-        private (JwtToken Jwt, RefreshToken Refresh) UpdateToken(User user)
+        private async Task<(JwtToken Jwt, RefreshToken Refresh)> UpdateTokenAsync(User user, CancellationToken cancellationToken)
         {
             var token = jwtTokenGenerator.GenerateJwtToken(user);
-            var oldToken = dbContext.JwtTokens.FirstOrDefault(t => t.UserId == user.Id);
+            var oldToken = await dbContext.JwtTokens.FirstOrDefaultAsync(t => t.UserId == user.Id);
 
             if (oldToken is not null)
             {
                 dbContext.JwtTokens.Remove(oldToken);
             }
-            dbContext.JwtTokens.Add(token);
+            await dbContext.JwtTokens.AddAsync(token);
 
             var refreshToken = jwtTokenGenerator.GetRefreshToken(user.Id);
-            dbContext.RefreshTokens.Add(refreshToken);
+            await dbContext.RefreshTokens.AddAsync(refreshToken);
 
             return (token, refreshToken);
         }

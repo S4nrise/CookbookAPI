@@ -14,5 +14,6 @@ namespace CookbookAPI.Abstractions
         public DbSet<RefreshToken> RefreshTokens { get; }
 
         public int SaveChanges();
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

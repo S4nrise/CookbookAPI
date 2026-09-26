@@ -5,9 +5,9 @@ namespace CookbookAPI.Abstractions
 {
     public interface IIngredientsService
     {
-        public int CreateIngredient(string name);
-        public void DeleteIngredient(int id);
-        public IReadOnlyList<IngredientVm> GetAllIngredients();
-        public Ingredient GetIngredientById(int id);
+        public Task<int> CreateIngredientAsync(string name, CancellationToken cancellationToken);
+        public Task DeleteIngredientAsync(int id, CancellationToken cancellationToken);
+        public Task<IReadOnlyList<IngredientVm>> GetAllIngredientsAsync(CancellationToken cancellationToken);
+        public Task<Ingredient> GetIngredientByIdAsync(int id, CancellationToken cancellationToken);
     }
 }

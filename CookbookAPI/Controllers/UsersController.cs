@@ -12,12 +12,12 @@ namespace CookbookAPI.Controllers
     {
         [AllowAnonymous]
         [HttpPost("/registration")]
-        public ActionResult<LogInResponse> Registration([FromBody] SignUpDto signUpUserDto)
+        public async Task<ActionResult<LogInResponse>> RegistrationAsync([FromBody] SignUpDto signUpUserDto, CancellationToken cancellationToken)
         {
             var validationResult = signUpValidator.Validate(signUpUserDto);
             if (validationResult.IsValid)
             {
-                var token = authService.SignUp(signUpUserDto);
+                var token = await authService.SignUpAsync(signUpUserDto, cancellationToken);
 
                 return Ok(token);
             }
@@ -26,9 +26,9 @@ namespace CookbookAPI.Controllers
 
         [AllowAnonymous]
         [HttpPost("/login")]
-        public ActionResult<LogInResponse> Login(LoginUserDto loginUserDto)
+        public async Task<ActionResult<LogInResponse>> LoginAsync(LoginUserDto loginUserDto, CancellationToken cancellationToken)
         {
-            var result = authService.LogIn(loginUserDto);
+            var result = await authService.LogInAsync(loginUserDto, cancellationToken);
             if (result is null)
             {
                 return NotFound();
@@ -37,18 +37,18 @@ namespace CookbookAPI.Controllers
         }
 
         [HttpPost("/logout")]
-        public IActionResult Logout([FromBody] int userId)
+        public async Task<IActionResult> LogoutAsync([FromBody] int userId, CancellationToken cancellationToken)
         {
-            var result = authService.LogOut(userId);
+            var result = await authService.LogOutAsync(userId, cancellationToken);
             if (!result) return NotFound();
 
             return Ok(result);
         }
 
         [HttpPost("/refresh")]
-        public ActionResult<LogInResponse> Refresh([FromBody] string refreshToken)
+        public async Task<ActionResult<LogInResponse>> RefreshAsync([FromBody] string refreshToken, CancellationToken cancellationToken)
         {
-            var result = authService.Refresh(refreshToken);
+            var result = await authService.RefreshAsync(refreshToken, cancellationToken);
 
             if (result is null)
                 return NotFound();
@@ -57,9 +57,9 @@ namespace CookbookAPI.Controllers
         }
 
         [HttpDelete("/revoke")]
-        public ActionResult Revoke([FromBody] string refreshToken)
+        public async Task<ActionResult> RevokeAsync([FromBody] string refreshToken, CancellationToken cancellationToken)
         {
-            authService.Revoke(refreshToken);
+            await authService.RevokeAsync(refreshToken, cancellationToken);
 
             return NoContent();
         }

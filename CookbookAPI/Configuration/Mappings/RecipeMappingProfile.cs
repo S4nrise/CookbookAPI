@@ -14,11 +14,13 @@ namespace CookbookAPI.Configuration.Mappings
             CreateMap<CreateRecipeDto, Recipe>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest=>dest.Ingredients,opt=>opt.MapFrom(src=>src.IngredientsInRecipeDto))
-                .ForMember(dest=>dest.Rating,opt=>opt.Ignore());
+                .ForMember(dest=>dest.Rating,opt=>opt.Ignore())
+                .ForMember(dest=>dest.UserId, opt=>opt.Ignore());
 
             CreateMap<UpdateRecipeDto, Recipe>()
                 .ForMember(dest => dest.Ingredients, opt => opt.MapFrom(src => src.IngredientsInRecipeDto))
-                .ForMember(dest => dest.Rating, opt => opt.Ignore());
+                .ForMember(dest => dest.Rating, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore());
         }
     }
 }

@@ -12,7 +12,7 @@ namespace CookbookAPI.Controllers
     {
         [HttpGet("/Recipes")]
         [Authorize]
-        public IActionResult GetRecipes([FromQuery] RecipeFilterDto recipeFilterDto)
+        public async Task<IActionResult> GetRecipesAsync([FromQuery] RecipeFilterDto recipeFilterDto, CancellationToken cancellationToken)
         {
             var userId = HttpContext.ExtractUserIdFromClaims();
             if (userId == null)
@@ -20,12 +20,12 @@ namespace CookbookAPI.Controllers
                 return Unauthorized();
             }
 
-            return Ok(recipeService.GetAllRecipes(userId.Value, recipeFilterDto));
+            return Ok(await recipeService.GetAllRecipesAsync(userId.Value, recipeFilterDto, cancellationToken));
         }
 
         [HttpGet("/GetRecipeById/{id}")]
         [Authorize]
-        public IActionResult GetRecipeById(int id)
+        public async Task<IActionResult> GetRecipeByIdAsync(int id, CancellationToken cancellationToken)
         {
             var userId = HttpContext.ExtractUserIdFromClaims();
             if (userId == null)
@@ -33,61 +33,61 @@ namespace CookbookAPI.Controllers
                 return Unauthorized();
             }
 
-            return Ok(recipeService.GetRecipe(userId.Value, id));
+            return Ok(await recipeService.GetRecipeAsync(userId.Value, id, cancellationToken));
         }
 
         [HttpPost("/AddRecipe")]
         [Authorize]
-        public IActionResult AddRecipe([FromBody] CreateRecipeDto createRecipeDto)
+        public async Task<IActionResult> AddRecipeAsync([FromBody] CreateRecipeDto createRecipeDto, CancellationToken cancellationToken)
         {
             var userId = HttpContext.ExtractUserIdFromClaims();
             if (userId == null)
             {
                 return Unauthorized();
             }
-            var recipeId = recipeService.CreateRecipe(userId.Value, createRecipeDto);
+            var recipeId = await recipeService.CreateRecipeAsync(userId.Value, createRecipeDto, cancellationToken);
 
             return CreatedAtAction("GetRecipeById", new { id = recipeId }, recipeId);
         }
 
         [HttpPut("/UpdateRecipe/{id}")]
         [Authorize]
-        public IActionResult UpdateRecipe(UpdateRecipeDto updateRecipeDto)
+        public async Task<IActionResult> UpdateRecipeAsync(UpdateRecipeDto updateRecipeDto, CancellationToken cancellationToken)
         {
             var userId = HttpContext.ExtractUserIdFromClaims();
             if (userId == null)
             {
                 return Unauthorized();
             }
-            recipeService.UpdateRecipe(userId.Value, updateRecipeDto);
+            await recipeService.UpdateRecipeAsync(userId.Value, updateRecipeDto, cancellationToken);
             return NoContent();
         }
 
         [HttpDelete("/DeleteRecipe/{id}")]
         [Authorize]
-        public IActionResult DeleteRecipe(int id)
+        public async Task<IActionResult> DeleteRecipeAsync(int id, CancellationToken cancellationToken)
         {
             var userId = HttpContext.ExtractUserIdFromClaims();
             if (userId == null)
             {
                 return Unauthorized();
             }
-            recipeService.DeleteRecipe(userId.Value, id);
-            
+            await recipeService.DeleteRecipeAsync(userId.Value, id, cancellationToken);
+
             return NoContent();
         }
 
         [HttpPost("/RateRecipe/{id}")]
         [Authorize]
-        public IActionResult RateRecipeById(int id, RateRecipeDto rateRecipeDto)
+        public async Task<IActionResult> RateRecipeByIdAsync(int id, RateRecipeDto rateRecipeDto, CancellationToken cancellationToken)
         {
             var userId = HttpContext.ExtractUserIdFromClaims();
             if (userId == null)
             {
                 return Unauthorized();
             }
-            recipeService.RateRecipe(userId.Value, id, rateRecipeDto);
-            
+            await recipeService.RateRecipeAsync(userId.Value, id, rateRecipeDto, cancellationToken);
+
             return Ok();
         }
     }
