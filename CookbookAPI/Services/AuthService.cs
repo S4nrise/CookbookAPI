@@ -2,7 +2,6 @@
 using CookbookAPI.Contracts;
 using CookbookAPI.Models;
 using CookbookAPI.Utils;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace CookbookAPI.Services

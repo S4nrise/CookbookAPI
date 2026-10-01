@@ -61,15 +61,6 @@ namespace CookbookAPI.Services
             };
 
             return await query.ProjectTo<RecipeVm>(mapper.ConfigurationProvider).ToListAsync();
-
-            /*var recipe = dbContext.Recipes
-                .AsNoTracking()
-                .Where(x => x.UserId == userId)
-                .Include(x => x.Rating)
-                .Include(x => x.Ingredients)
-                .ThenInclude(x => x.Ingredient)
-                .ToList();
-            return mapper.Map<IReadOnlyList<RecipeVm>>(recipe);*/
         }
 
         public async Task<RecipeVm> GetRecipeAsync(int userId, int id, CancellationToken cancellationToken)
@@ -108,6 +99,7 @@ namespace CookbookAPI.Services
             if (updateRecipeDto.IngredientsInRecipeDto == null)
             {
                 await dbContext.SaveChangesAsync();
+
                 return;
             }
 

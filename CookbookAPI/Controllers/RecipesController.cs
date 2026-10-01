@@ -45,6 +45,7 @@ namespace CookbookAPI.Controllers
             {
                 return Unauthorized();
             }
+
             var recipeId = await recipeService.CreateRecipeAsync(userId.Value, createRecipeDto, cancellationToken);
 
             return CreatedAtAction("GetRecipeById", new { id = recipeId }, recipeId);
@@ -59,7 +60,9 @@ namespace CookbookAPI.Controllers
             {
                 return Unauthorized();
             }
+
             await recipeService.UpdateRecipeAsync(userId.Value, updateRecipeDto, cancellationToken);
+
             return NoContent();
         }
 
@@ -72,6 +75,7 @@ namespace CookbookAPI.Controllers
             {
                 return Unauthorized();
             }
+
             await recipeService.DeleteRecipeAsync(userId.Value, id, cancellationToken);
 
             return NoContent();
@@ -86,6 +90,7 @@ namespace CookbookAPI.Controllers
             {
                 return Unauthorized();
             }
+
             await recipeService.RateRecipeAsync(userId.Value, id, rateRecipeDto, cancellationToken);
 
             return Ok();

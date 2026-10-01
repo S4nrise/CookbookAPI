@@ -21,6 +21,7 @@ namespace CookbookAPI.Controllers
 
                 return Ok(token);
             }
+
             return BadRequest();
         }
 
@@ -33,6 +34,7 @@ namespace CookbookAPI.Controllers
             {
                 return NotFound();
             }
+
             return Ok(result);
         }
 
@@ -40,7 +42,10 @@ namespace CookbookAPI.Controllers
         public async Task<IActionResult> LogoutAsync([FromBody] int userId, CancellationToken cancellationToken)
         {
             var result = await authService.LogOutAsync(userId, cancellationToken);
-            if (!result) return NotFound();
+            if (!result)
+            {
+                return NotFound();
+            }
 
             return Ok(result);
         }
@@ -49,9 +54,10 @@ namespace CookbookAPI.Controllers
         public async Task<ActionResult<LogInResponse>> RefreshAsync([FromBody] string refreshToken, CancellationToken cancellationToken)
         {
             var result = await authService.RefreshAsync(refreshToken, cancellationToken);
-
             if (result is null)
+            {
                 return NotFound();
+            }
 
             return Ok(result);
         }
